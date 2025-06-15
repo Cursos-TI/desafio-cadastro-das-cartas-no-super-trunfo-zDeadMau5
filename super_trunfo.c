@@ -1,200 +1,216 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Protótipos das funções para melhor organização (opcional, mas boa prática)
-void exibirMenu();
-void compararPopulacao(char pais1[], unsigned long int pop1, char pais2[], unsigned long int pop2);
-void compararArea(char pais1[], float area1, char pais2[], float area2);
-void compararPIB(char pais1[], float pib1, char pais2[], float pib2);
-void compararPontosTuristicos(char pais1[], int pontos1, char pais2[], int pontos2);
-void compararDensidade(char pais1[], float dens1, char pais2[], float dens2);
+// Estrutura para agrupar todos os dados de uma carta
+struct Card {
+    char pais[50];
+    unsigned long int populacao;
+    float area;
+    float pib;
+    int pontosTuristicos;
+    float densidade;
+};
+
+// --- Protótipos das Funções ---
+void cadastrarCartas(struct Card *c1, struct Card *c2);
+void jogarRodada(struct Card c1, struct Card c2);
+void exibirMenuAtributos();
+const char* getNomeAtributo(int escolha);
+double getValorAtributo(int escolha, struct Card c);
+
 
 int main() {
-    // --- BLOCO 1: Declaração de Variáveis ---
-    // Atributos da Carta 1
-    char pais1[50];
-    unsigned long int populacao1;
-    float area1;
-    float pib1;
-    int pontosTuristicos1;
-    float densidade1;
+    struct Card carta1, carta2;
+    int cartasCadastradas = 0; // Flag para controlar se as cartas já foram inseridas
+    int escolhaPrincipal;
 
-    // Atributos da Carta 2
-    char pais2[50];
-    unsigned long int populacao2;
-    float area2;
-    float pib2;
-    int pontosTuristicos2;
-    float densidade2;
-
-    int escolha; // Variável para a escolha do usuário no menu
-
-    // --- BLOCO 2: Cadastro das Cartas ---
-    printf("--- Cadastro do Jogo Super Trunfo ---\n");
-
-    // Coleta de dados da Carta 1
-    printf("\n--- Dados da Carta 1 ---\n");
-    printf("Digite o nome do pais: ");
-    scanf(" %[^\n]s", pais1);
-    printf("Digite a populacao: ");
-    scanf("%lu", &populacao1);
-    printf("Digite a area (em km2): ");
-    scanf("%f", &area1);
-    printf("Digite o PIB (em bilhoes de dolares): ");
-    scanf("%f", &pib1);
-    printf("Digite o numero de pontos turisticos: ");
-    scanf("%d", &pontosTuristicos1);
-
-    // Coleta de dados da Carta 2
-    printf("\n--- Dados da Carta 2 ---\n");
-    printf("Digite o nome do pais: ");
-    scanf(" %[^\n]s", pais2);
-    printf("Digite a populacao: ");
-    scanf("%lu", &populacao2);
-    printf("Digite a area (em km2): ");
-    scanf("%f", &area2);
-    printf("Digite o PIB (em bilhoes de dolares): ");
-    scanf("%f", &pib2);
-    printf("Digite o numero de pontos turisticos: ");
-    scanf("%d", &pontosTuristicos2);
-
-    // --- BLOCO 3: Cálculos Iniciais ---
-    // Calcula a densidade demográfica para ambas as cartas
-    if (area1 > 0) densidade1 = (float)populacao1 / area1; else densidade1 = 0;
-    if (area2 > 0) densidade2 = (float)populacao2 / area2; else densidade2 = 0;
-
-
-    // --- BLOCO 4: Laço Principal do Jogo (Menu Interativo) ---
     do {
-        exibirMenu(); // Mostra as opções para o jogador
+        printf("\n\n===== SUPER TRUNFO - MENU PRINCIPAL =====\n");
+        printf("1. Cadastrar Novas Cartas\n");
+        printf("2. Jogar Rodada de Comparacao\n");
+        printf("3. Sair\n");
+        printf("=======================================\n");
         printf("Sua escolha: ");
-        scanf("%d", &escolha);
+        scanf("%d", &escolhaPrincipal);
 
-        // A estrutura switch direciona para a comparação correta com base na escolha
-        switch (escolha) {
+        switch (escolhaPrincipal) {
             case 1:
-                compararPopulacao(pais1, populacao1, pais2, populacao2);
+                cadastrarCartas(&carta1, &carta2);
+                cartasCadastradas = 1; // Marca que as cartas foram cadastradas
                 break;
             case 2:
-                compararArea(pais1, area1, pais2, area2);
+                if (cartasCadastradas) {
+                    jogarRodada(carta1, carta2);
+                } else {
+                    printf("\nERRO: Voce precisa cadastrar as cartas primeiro! (Opcao 1)\n");
+                }
                 break;
             case 3:
-                compararPIB(pais1, pib1, pais2, pib2);
-                break;
-            case 4:
-                compararPontosTuristicos(pais1, pontosTuristicos1, pais2, pontosTuristicos2);
-                break;
-            case 5:
-                compararDensidade(pais1, densidade1, pais2, densidade2);
-                break;
-            case 6:
-                printf("\nSaindo do programa... Obrigado por jogar!\n");
+                printf("\nSaindo do programa... Ate a proxima!\n");
                 break;
             default:
-                // Lida com entradas inválidas do usuário
-                printf("\nOpcao invalida! Por favor, escolha um numero de 1 a 6.\n");
+                printf("\nOpcao invalida. Tente novamente.\n");
                 break;
         }
 
-    } while (escolha != 6); // O laço continua até o usuário escolher sair (opção 6)
+    } while (escolhaPrincipal != 3);
 
-    return 0; // Fim do programa
+    return 0;
+}
+
+/**
+ * @brief Coleta os dados das duas cartas do usuário e calcula a densidade.
+ * @param c1 Ponteiro para a struct da carta 1.
+ * @param c2 Ponteiro para a struct da carta 2.
+ */
+void cadastrarCartas(struct Card *c1, struct Card *c2) {
+    printf("\n--- Cadastro da Carta 1 ---\n");
+    printf("Digite o nome do pais: ");
+    scanf(" %[^\n]s", c1->pais);
+    printf("Digite a populacao: ");
+    scanf("%lu", &c1->populacao);
+    printf("Digite a area (em km2): ");
+    scanf("%f", &c1->area);
+    printf("Digite o PIB (em bilhoes de dolares): ");
+    scanf("%f", &c1->pib);
+    printf("Digite o numero de pontos turisticos: ");
+    scanf("%d", &c1->pontosTuristicos);
+    c1->densidade = (c1->area > 0) ? ((float)c1->populacao / c1->area) : 0;
+
+    printf("\n--- Cadastro da Carta 2 ---\n");
+    printf("Digite o nome do pais: ");
+    scanf(" %[^\n]s", c2->pais);
+    printf("Digite a populacao: ");
+    scanf("%lu", &c2->populacao);
+    printf("Digite a area (em km2): ");
+    scanf("%f", &c2->area);
+    printf("Digite o PIB (em bilhoes de dolares): ");
+    scanf("%f", &c2->pib);
+    printf("Digite o numero de pontos turisticos: ");
+    scanf("%d", &c2->pontosTuristicos);
+    c2->densidade = (c2->area > 0) ? ((float)c2->populacao / c2->area) : 0;
+
+    printf("\nCartas cadastradas com sucesso!\n");
 }
 
 
 /**
- * @brief Exibe o menu de opções para o jogador.
+ * @brief Controla uma rodada completa: escolha de dois atributos, soma e comparação.
+ * @param c1 Struct da carta 1.
+ * @param c2 Struct da carta 2.
  */
-void exibirMenu() {
-    printf("\n\n--------------------------------------");
-    printf("\nQual atributo voce deseja comparar?\n");
-    printf("--------------------------------------\n");
+void jogarRodada(struct Card c1, struct Card c2) {
+    int escolha1, escolha2;
+
+    // --- Escolha do Primeiro Atributo ---
+    printf("\n--- Escolha o PRIMEIRO atributo para comparar ---\n");
+    exibirMenuAtributos();
+    printf("Sua escolha: ");
+    scanf("%d", &escolha1);
+
+    // Validação da primeira escolha
+    if (escolha1 < 1 || escolha1 > 5) {
+        printf("ERRO: Escolha invalida. Tente novamente.\n");
+        return; // Retorna ao menu principal
+    }
+
+    // --- Escolha do Segundo Atributo (Menu "Dinâmico") ---
+    printf("\n--- Escolha o SEGUNDO atributo para comparar ---\n");
+    exibirMenuAtributos(); // Mostramos o menu completo
+    printf("Sua escolha: ");
+    scanf("%d", &escolha2);
+
+    // Validação da segunda escolha
+    if (escolha2 < 1 || escolha2 > 5) {
+        printf("ERRO: Escolha invalida. Tente novamente.\n");
+        return;
+    }
+    // Validação para garantir que os atributos são diferentes
+    if (escolha1 == escolha2) {
+        printf("ERRO: Voce nao pode escolher o mesmo atributo duas vezes. Tente novamente.\n");
+        return;
+    }
+
+    // --- Obtenção dos Nomes e Valores dos Atributos ---
+    const char* nomeAttr1 = getNomeAtributo(escolha1);
+    const char* nomeAttr2 = getNomeAtributo(escolha2);
+
+    double valor1_c1 = getValorAtributo(escolha1, c1);
+    double valor1_c2 = getValorAtributo(escolha1, c2);
+    double valor2_c1 = getValorAtributo(escolha2, c1);
+    double valor2_c2 = getValorAtributo(escolha2, c2);
+
+    // --- Soma e Comparação Final ---
+    double soma_c1 = valor1_c1 + valor2_c1;
+    double soma_c2 = valor1_c2 + valor2_c2;
+
+    printf("\n\n================ RESULTADO DA RODADA ================\n");
+    printf("Atributos escolhidos: %s e %s\n", nomeAttr1, nomeAttr2);
+    printf("---------------------------------------------------\n");
+    printf("Carta 1: %s\n", c1.pais);
+    printf(" > %s: %.2f\n", nomeAttr1, valor1_c1);
+    printf(" > %s: %.2f\n", nomeAttr2, valor2_c1);
+    printf(" > SOMA TOTAL: %.2f\n", soma_c1);
+    printf("---------------------------------------------------\n");
+    printf("Carta 2: %s\n", c2.pais);
+    printf(" > %s: %.2f\n", nomeAttr1, valor1_c2);
+    printf(" > %s: %.2f\n", nomeAttr2, valor2_c2);
+    printf(" > SOMA TOTAL: %.2f\n", soma_c2);
+    printf("---------------------------------------------------\n");
+
+    if (soma_c1 > soma_c2) {
+        printf("VENCEDOR DA RODADA: %s!\n", c1.pais);
+    } else if (soma_c2 > soma_c1) {
+        printf("VENCEDOR DA RODADA: %s!\n", c2.pais);
+    } else {
+        printf("RESULTADO DA RODADA: EMPATE!\n");
+    }
+    printf("==================================================\n");
+}
+
+
+/**
+ * @brief Exibe o menu de atributos para o jogador escolher.
+ */
+void exibirMenuAtributos() {
     printf("1. Populacao\n");
     printf("2. Area\n");
     printf("3. PIB\n");
     printf("4. Numero de Pontos Turisticos\n");
     printf("5. Densidade Demografica (menor vence)\n");
-    printf("6. Sair do Jogo\n");
-    printf("--------------------------------------\n");
 }
 
+
 /**
- * @brief Compara as cartas pelo atributo Populacao.
+ * @brief Retorna o nome do atributo como uma string com base na escolha numérica.
+ * @param escolha O número da escolha do usuário.
+ * @return Uma string constante com o nome do atributo.
  */
-void compararPopulacao(char pais1[], unsigned long int pop1, char pais2[], unsigned long int pop2) {
-    printf("\n--- Comparando por: Populacao ---\n");
-    printf("Carta 1 (%s): %lu\n", pais1, pop1);
-    printf("Carta 2 (%s): %lu\n", pais2, pop2);
-    if (pop1 > pop2) {
-        printf("Resultado: %s venceu!\n", pais1);
-    } else if (pop2 > pop1) {
-        printf("Resultado: %s venceu!\n", pais2);
-    } else {
-        printf("Resultado: Empate!\n");
+const char* getNomeAtributo(int escolha) {
+    switch (escolha) {
+        case 1: return "Populacao";
+        case 2: return "Area";
+        case 3: return "PIB";
+        case 4: return "Pontos Turisticos";
+        case 5: return "Densidade Demografica";
+        default: return "Desconhecido";
     }
 }
 
-/**
- * @brief Compara as cartas pelo atributo Area.
- */
-void compararArea(char pais1[], float area1, char pais2[], float area2) {
-    printf("\n--- Comparando por: Area ---\n");
-    printf("Carta 1 (%s): %.2f km2\n", pais1, area1);
-    printf("Carta 2 (%s): %.2f km2\n", pais2, area2);
-    if (area1 > area2) {
-        printf("Resultado: %s venceu!\n", pais1);
-    } else if (area2 > area1) {
-        printf("Resultado: %s venceu!\n", pais2);
-    } else {
-        printf("Resultado: Empate!\n");
-    }
-}
 
 /**
- * @brief Compara as cartas pelo atributo PIB.
+ * @brief Retorna o valor de um atributo específico de uma carta, convertido para double.
+ * @param escolha O número da escolha do usuário.
+ * @param c A struct da carta da qual o valor será extraído.
+ * @return O valor do atributo como um double.
  */
-void compararPIB(char pais1[], float pib1, char pais2[], float pib2) {
-    printf("\n--- Comparando por: PIB ---\n");
-    printf("Carta 1 (%s): %.2f bilhoes\n", pais1, pib1);
-    printf("Carta 2 (%s): %.2f bilhoes\n", pais2, pib2);
-    if (pib1 > pib2) {
-        printf("Resultado: %s venceu!\n", pais1);
-    } else if (pib2 > pib1) {
-        printf("Resultado: %s venceu!\n", pais2);
-    } else {
-        printf("Resultado: Empate!\n");
-    }
-}
-
-/**
- * @brief Compara as cartas pelo atributo Pontos Turisticos.
- */
-void compararPontosTuristicos(char pais1[], int pontos1, char pais2[], int pontos2) {
-    printf("\n--- Comparando por: Pontos Turisticos ---\n");
-    printf("Carta 1 (%s): %d\n", pais1, pontos1);
-    printf("Carta 2 (%s): %d\n", pais2, pontos2);
-    if (pontos1 > pontos2) {
-        printf("Resultado: %s venceu!\n", pais1);
-    } else if (pontos2 > pontos1) {
-        printf("Resultado: %s venceu!\n", pais2);
-    } else {
-        printf("Resultado: Empate!\n");
-    }
-}
-
-/**
- * @brief Compara as cartas pelo atributo Densidade Demografica.
- * Neste caso, o menor valor vence.
- */
-void compararDensidade(char pais1[], float dens1, char pais2[], float dens2) {
-    printf("\n--- Comparando por: Densidade Demografica (MENOR vence) ---\n");
-    printf("Carta 1 (%s): %.2f hab/km2\n", pais1, dens1);
-    printf("Carta 2 (%s): %.2f hab/km2\n", pais2, dens2);
-    if (dens1 < dens2) {
-        printf("Resultado: %s venceu!\n", pais1);
-    } else if (dens2 < dens1) {
-        printf("Resultado: %s venceu!\n", pais2);
-    } else {
-        printf("Resultado: Empate!\n");
+double getValorAtributo(int escolha, struct Card c) {
+    switch (escolha) {
+        case 1: return (double)c.populacao;
+        case 2: return (double)c.area;
+        case 3: return (double)c.pib;
+        case 4: return (double)c.pontosTuristicos;
+        case 5: return (double)c.densidade * -1; // Inverte o valor para a soma
+        default: return 0.0;
     }
 }
